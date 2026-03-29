@@ -14,7 +14,7 @@ const colorClass = (n: number) => n > 0 ? 'text-[#00d4a0]' : n < 0 ? 'text-[#ff4
 export default function HomeDashboard() {
   const [sideRecords, setSideRecords] = useState<SideRecord[]>([]);
   const [stockRecords, setStockRecords] = useState<StockRecord[]>([]);
-  const [tab, setTab] = useState<'month' | 'total'>('month');
+  const [tab, setTab] = useState<'month' | 'total'>('total');
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
