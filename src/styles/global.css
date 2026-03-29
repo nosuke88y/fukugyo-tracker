@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0d0f14;
+  --color-bg-card: #161a22;
+  --color-bg-input: #1c2130;
+  --color-border: #2a2f3e;
+  --color-text: #e4e6eb;
+  --color-text-muted: #8b8fa3;
+  --color-green: #00d4a0;
+  --color-red: #ff4d6d;
+  --color-blue: #4d9fff;
+  --font-sans: 'Noto Sans JP', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: 72px;
+}
