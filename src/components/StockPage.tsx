@@ -63,15 +63,13 @@ export default function StockPage() {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-[#161a22] border border-[#2a2f3e] rounded-xl p-4 mb-6 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-[#8b8fa3] block mb-1">日付</label>
-              <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full max-w-[160px] bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb]" required />
-            </div>
-            <div>
-              <label className="text-xs text-[#8b8fa3] block mb-1">損益金額（円）</label>
-              <input type="number" value={form.pnl} onChange={e => setForm({...form, pnl: e.target.value})} placeholder="+5000 / -3000" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] font-mono placeholder-[#555]" required />
-            </div>
+          <div>
+            <label className="text-xs text-[#8b8fa3] block mb-1">日付</label>
+            <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb]" required />
+          </div>
+          <div>
+            <label className="text-xs text-[#8b8fa3] block mb-1">損益金額（円）<span className="text-[#555] ml-1">プラス=利益 / マイナス=損失</span></label>
+            <input type="number" value={form.pnl} onChange={e => setForm({...form, pnl: e.target.value})} placeholder="+5000 / -3000" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] font-mono placeholder-[#555]" required />
           </div>
           <div>
             <label className="text-xs text-[#8b8fa3] block mb-1">メモ（任意）</label>
