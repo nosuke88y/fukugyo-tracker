@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 
 interface StockRecord {
-  id: string; date: string; name: string; code: string; qty: number; cost: number; price: number; pnl: number; memo: string;
+  id: string;
+  date: string;
+  pnl: number;
+  memo: string;
 }
 
 const STORAGE_KEY = 'fukugyo_stock_v1';
@@ -9,7 +12,7 @@ const STORAGE_KEY = 'fukugyo_stock_v1';
 export default function StockPage() {
   const [records, setRecords] = useState<StockRecord[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), name: '', code: '', qty: '', cost: '', price: '', memo: '' });
+  const [form, setForm] = useState({ date: new Date().toISOString().slice(0, 10), pnl: '', memo: '' });
 
   useEffect(() => {
     setRecords(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
@@ -22,17 +25,14 @@ export default function StockPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const qty = Number(form.qty);
-    const cost = Number(form.cost);
-    const price = Number(form.price);
-    const pnl = (price - cost) * qty;
     const newRecord: StockRecord = {
       id: crypto.randomUUID(),
-      date: form.date, name: form.name, code: form.code,
-      qty, cost, price, pnl, memo: form.memo,
+      date: form.date,
+      pnl: Number(form.pnl),
+      memo: form.memo,
     };
     save([newRecord, ...records]);
-    setForm({ date: new Date().toISOString().slice(0, 10), name: '', code: '', qty: '', cost: '', price: '', memo: '' });
+    setForm({ date: new Date().toISOString().slice(0, 10), pnl: '', memo: '' });
     setShowForm(false);
   };
 
@@ -54,7 +54,6 @@ export default function StockPage() {
         </button>
       </div>
 
-      {/* 合計 */}
       <div className="bg-[#161a22] border border-[#2a2f3e] rounded-xl p-4 mb-6">
         <p className="text-xs text-[#8b8fa3] mb-1">累計損益</p>
         <p className={`text-2xl font-mono font-bold ${colorClass(totalPnl)}`}>
@@ -64,37 +63,17 @@ export default function StockPage() {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-[#161a22] border border-[#2a2f3e] rounded-xl p-4 mb-6 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-[#8b8fa3] block mb-1">日付</label>
-              <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb]" required />
-            </div>
-            <div>
-              <label className="text-xs text-[#8b8fa3] block mb-1">銘柄コード</label>
-              <input type="text" value={form.code} onChange={e => setForm({...form, code: e.target.value})} placeholder="例: 7203" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] font-mono placeholder-[#555]" required />
-            </div>
+          <div>
+            <label className="text-xs text-[#8b8fa3] block mb-1">日付</label>
+            <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb]" required />
           </div>
           <div>
-            <label className="text-xs text-[#8b8fa3] block mb-1">銘柄名</label>
-            <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="例: トヨタ自動車" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] placeholder-[#555]" required />
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="text-xs text-[#8b8fa3] block mb-1">数量</label>
-              <input type="number" value={form.qty} onChange={e => setForm({...form, qty: e.target.value})} placeholder="100" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] font-mono placeholder-[#555]" required />
-            </div>
-            <div>
-              <label className="text-xs text-[#8b8fa3] block mb-1">取得単価</label>
-              <input type="number" value={form.cost} onChange={e => setForm({...form, cost: e.target.value})} placeholder="0" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] font-mono placeholder-[#555]" required />
-            </div>
-            <div>
-              <label className="text-xs text-[#8b8fa3] block mb-1">売却単価</label>
-              <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="0" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] font-mono placeholder-[#555]" required />
-            </div>
+            <label className="text-xs text-[#8b8fa3] block mb-1">損益金額（円）<span className="text-[#555]">プラス=利益 / マイナス=損失</span></label>
+            <input type="number" value={form.pnl} onChange={e => setForm({...form, pnl: e.target.value})} placeholder="例: 5000 または -3000" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] font-mono placeholder-[#555]" required />
           </div>
           <div>
-            <label className="text-xs text-[#8b8fa3] block mb-1">メモ</label>
-            <input type="text" value={form.memo} onChange={e => setForm({...form, memo: e.target.value})} placeholder="任意" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] placeholder-[#555]" />
+            <label className="text-xs text-[#8b8fa3] block mb-1">メモ（任意）</label>
+            <input type="text" value={form.memo} onChange={e => setForm({...form, memo: e.target.value})} placeholder="例: トヨタ100株利確" className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb] placeholder-[#555]" />
           </div>
           <button type="submit" className="w-full bg-[#4d9fff] text-white py-2.5 rounded-lg font-bold text-sm">保存</button>
         </form>
@@ -107,12 +86,12 @@ export default function StockPage() {
           {records.sort((a, b) => b.date.localeCompare(a.date)).map(r => (
             <div key={r.id} className="bg-[#161a22] border border-[#2a2f3e] rounded-lg px-4 py-3 flex justify-between items-center">
               <div className="flex-1 min-w-0">
-                <p className="text-sm truncate">{r.name} <span className="text-[#8b8fa3] font-mono">({r.code})</span></p>
-                <p className="text-xs text-[#8b8fa3]">{r.date} · {r.qty}株 · {fmt(r.cost)}→{fmt(r.price)}</p>
+                <p className="text-sm text-[#8b8fa3]">{r.date}</p>
+                {r.memo && <p className="text-xs text-[#555] truncate">{r.memo}</p>}
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <p className={`font-mono font-bold text-sm ${colorClass(r.pnl)}`}>
-                  {r.pnl >= 0 ? '+' : ''}{fmt(r.pnl)}
+                  {r.pnl >= 0 ? '+' : ''}{fmt(r.pnl)}円
                 </p>
                 <button onClick={() => handleDelete(r.id)} className="text-[#8b8fa3] hover:text-[#ff4d6d] text-xs">✕</button>
               </div>

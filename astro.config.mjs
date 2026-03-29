@@ -5,6 +5,9 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   integrations: [react()],
+  prefetch: {
+    prefetchAll: true,
+  },
   vite: {
     plugins: [tailwindcss()],
   },
