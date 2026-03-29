@@ -53,17 +53,15 @@ export default function RecordPage() {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-[#161a22] border border-[#2a2f3e] rounded-xl p-4 mb-6 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-[#8b8fa3] block mb-1">日付</label>
-              <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb]" required />
-            </div>
-            <div>
-              <label className="text-xs text-[#8b8fa3] block mb-1">種別</label>
-              <select value={form.type} onChange={e => setForm({...form, type: e.target.value as 'income' | 'expense'})} className="w-full bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb]">
-                <option value="income">収入</option>
-                <option value="expense">経費</option>
-              </select>
+          <div>
+            <label className="text-xs text-[#8b8fa3] block mb-1">日付</label>
+            <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} className="w-full max-w-[160px] bg-[#1c2130] border border-[#2a2f3e] rounded-lg px-3 py-2 text-sm text-[#e4e6eb]" required />
+          </div>
+          <div>
+            <label className="text-xs text-[#8b8fa3] block mb-1">種別</label>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setForm({...form, type: 'income'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${form.type === 'income' ? 'bg-[#00d4a0] text-[#0d0f14]' : 'bg-[#1c2130] border border-[#2a2f3e] text-[#8b8fa3]'}`}>収入</button>
+              <button type="button" onClick={() => setForm({...form, type: 'expense'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${form.type === 'expense' ? 'bg-[#ff4d6d] text-white' : 'bg-[#1c2130] border border-[#2a2f3e] text-[#8b8fa3]'}`}>経費</button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
