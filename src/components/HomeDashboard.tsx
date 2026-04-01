@@ -30,11 +30,11 @@ export default function HomeDashboard() {
   const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
   // 今月
-  const monthSide = sideRecords.filter(r => r.date.startsWith(thisMonth));
+  const monthSide = sideRecords.filter(r => r.date.slice(0, 7) === thisMonth);
   const mIncome = monthSide.filter(r => r.type === 'income').reduce((s, r) => s + r.amount, 0);
   const mExpense = monthSide.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0);
   const mSideProfit = mIncome - mExpense;
-  const mStockPnl = stockRecords.filter(r => r.date.startsWith(thisMonth)).reduce((s, r) => s + r.pnl, 0);
+  const mStockPnl = stockRecords.filter(r => r.date.slice(0, 7) === thisMonth).reduce((s, r) => s + r.pnl, 0);
   const mTotal = mSideProfit + mStockPnl;
 
   // 通算
@@ -53,32 +53,39 @@ export default function HomeDashboard() {
   const dispStock = isMonth ? mStockPnl : tStockPnl;
   const dispLabel = isMonth ? `${thisMonth.replace('-', '年')}月` : '通算';
 
-  // 月別グラフデータ
+  // 月別グラフデータ（月ごとの合計を集計）
   const chartData = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
-      const m = `${chartYear}-${String(i + 1).padStart(2, '0')}`;
-      const ms = sideRecords.filter(r => r.date.startsWith(m));
-      const side = ms.filter(r => r.type === 'income').reduce((s, r) => s + r.amount, 0)
-                 - ms.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0);
-      const stock = stockRecords.filter(r => r.date.startsWith(m)).reduce((s, r) => s + r.pnl, 0);
+      const monthKey = `${chartYear}-${String(i + 1).padStart(2, '0')}`;
+      // 副業: 該当月のレコードを date.slice(0,7) でフィルタ
+      const monthSideRecs = sideRecords.filter(r => r.date.slice(0, 7) === monthKey);
+      const side = monthSideRecs.filter(r => r.type === 'income').reduce((s, r) => s + r.amount, 0)
+                 - monthSideRecs.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0);
+      // 株式: 該当月のレコードを date.slice(0,7) でフィルタ
+      const stock = stockRecords.filter(r => r.date.slice(0, 7) === monthKey).reduce((s, r) => s + r.pnl, 0);
       return { month: `${i + 1}月`, side, stock };
     });
   }, [sideRecords, stockRecords, chartYear]);
 
-  // 日次グラフデータ
+  // 日次グラフデータ（選択月の日ごとの合計を集計）
   const dailyData = useMemo(() => {
-    const prefix = `${dailyYear}-${String(dailyMonth).padStart(2, '0')}`;
+    const monthKey = `${dailyYear}-${String(dailyMonth).padStart(2, '0')}`;
     const daysInMonth = new Date(dailyYear, dailyMonth, 0).getDate();
+    // 選択月のデータだけを先にフィルタ
+    const monthSideRecs = sideRecords.filter(r => r.date.slice(0, 7) === monthKey);
+    const monthStockRecs = stockRecords.filter(r => r.date.slice(0, 7) === monthKey);
     return Array.from({ length: daysInMonth }, (_, i) => {
       const day = i + 1;
-      const dateStr = `${prefix}-${String(day).padStart(2, '0')}`;
-      const ds = sideRecords.filter(r => r.date === dateStr);
-      const side = ds.filter(r => r.type === 'income').reduce((s, r) => s + r.amount, 0)
-                 - ds.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0);
-      const stock = stockRecords.filter(r => r.date === dateStr).reduce((s, r) => s + r.pnl, 0);
-      // データがない日はnullにして非表示
-      const hasSide = ds.length > 0;
-      const hasStock = stockRecords.some(r => r.date === dateStr);
+      const dateStr = `${monthKey}-${String(day).padStart(2, '0')}`;
+      // 副業: 該当日のレコードを日付完全一致でフィルタ
+      const daySideRecs = monthSideRecs.filter(r => r.date === dateStr);
+      const side = daySideRecs.filter(r => r.type === 'income').reduce((s, r) => s + r.amount, 0)
+                 - daySideRecs.filter(r => r.type === 'expense').reduce((s, r) => s + r.amount, 0);
+      // 株式: 該当日のレコードを日付完全一致でフィルタ
+      const stock = monthStockRecs.filter(r => r.date === dateStr).reduce((s, r) => s + r.pnl, 0);
+      // データがない日はnull（connectNulls={false}で線を途切れさせる）
+      const hasSide = daySideRecs.length > 0;
+      const hasStock = monthStockRecs.some(r => r.date === dateStr);
       return {
         day: `${day}日`,
         side: hasSide ? side : null,
@@ -149,7 +156,8 @@ export default function HomeDashboard() {
 
         {chartMode === 'monthly' ? (
           <>
-            {/* 月別グラフ */}
+            {/* 月別グラフ（年間の月ごと合計） */}
+            <p className="text-xs text-[#8b8fa3] mb-2">月ごとの損益合計</p>
             <div className="flex items-center justify-between mb-3">
               <button onClick={() => setChartYear(y => y - 1)} className="text-[#8b8fa3] hover:text-[#e4e6eb] text-sm px-2">◀</button>
               <p className="text-sm font-bold font-mono">{chartYear}年</p>
@@ -178,7 +186,8 @@ export default function HomeDashboard() {
           </>
         ) : (
           <>
-            {/* 日次推移グラフ */}
+            {/* 日次推移グラフ（選択月の日別損益） */}
+            <p className="text-xs text-[#8b8fa3] mb-2">選択月の日別損益推移</p>
             <div className="flex items-center justify-between mb-3">
               <button onClick={() => moveDailyMonth(-1)} className="text-[#8b8fa3] hover:text-[#e4e6eb] text-sm px-2">◀</button>
               <p className="text-sm font-bold font-mono">{dailyYear}年{dailyMonth}月</p>
